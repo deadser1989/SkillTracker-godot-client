@@ -1,0 +1,55 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=skills_db
+      - POSTGRES_USER=skill
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skill -d skills_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: ./app/
+    command: python manage.py runserver 0.0.0.0:8000
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=skills_db
+      - DB_USER=skill
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+      - DB_HOST=db
+      - DB_PORT=5432
+    secrets:
+      - db_password
+    depends_on:
+      db:
+        condition: service_healthy
+
+secrets:
+  db_password:
+    file: ./app/db/password.txt
+
+volumes:
+  db_data:

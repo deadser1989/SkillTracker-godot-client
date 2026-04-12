@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://jnvcid2o7vtd"]
+
+[ext_resource type="PackedScene" uid="uid://c8j5po5apsuyp" path="res://SkillNodeTemplate.tscn" id="1_217a5"]
+
+[node name="SkillTree" type="SkillTree" unique_id=1358090678]
+position = Vector2(-21, 17)
+
+[node name="SkillNode" parent="." unique_id=861928532 instance=ExtResource("1_217a5")]
+skill_id = "skill1"
+current_state = 3
+modulate = Color(1, 0.9, 0.4, 1)
+position = Vector2(-208, -78)
+scale = Vector2(1.1, 1.1)
+
+[node name="SkillNode2" parent="." unique_id=1111340913 instance=ExtResource("1_217a5")]
+skill_id = "skill2"
+current_subject = 0
+required_prev_skills = PackedStringArray("skill1")
+position = Vector2(-426.00006, 125)
+
+[node name="SkillNode3" parent="." unique_id=634617236 instance=ExtResource("1_217a5")]
+current_state = 1
+current_subject = 0
+modulate = Color(0.3, 0.3, 0.3, 0.6)
+position = Vector2(404, -162)
+scale = Vector2(0.9, 0.9)
+
+[node name="SkillNode4" parent="." unique_id=555344311 instance=ExtResource("1_217a5")]
+current_state = 3
+current_subject = 0
+modulate = Color(1, 0.9, 0.4, 1)
+position = Vector2(109.999985, -330)
+scale = Vector2(1.1, 1.1)
+
+[node name="SkillNode5" parent="." unique_id=2142406606 instance=ExtResource("1_217a5")]
+current_subject = 1
+position = Vector2(-270, -377)
+
+[node name="SkillNode6" parent="." unique_id=1378794027 instance=ExtResource("1_217a5")]
+current_subject = 4
+position = Vector2(-577, -145.00002)

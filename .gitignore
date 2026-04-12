@@ -1,0 +1,9 @@
+game/.godot/
+*.dylib
+*.dll
+*.so
+*.a
+*.o
+*.os
+.vscode/
+.DS_Store

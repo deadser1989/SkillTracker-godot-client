@@ -1,0 +1,17 @@
+//КАМИНТАРИ НИ РАЗРЕШИНИ В ДЖСОЕН
+
+{
+  "id": 101,
+  "parent_ids": [100],         
+  "node_name": "Pushups",
+  "node_info": "Do 20 pushups",
+  "node_type": "accumulative",    // "accumulative", "timer", "once"
+  "rarity": 1,                    // 0=Common, 1=Rare, 2=Epic, 3=Legendary
+  "cooldown": "daily",            // null, "daily", "weekly"
+  "xp_reward": 50,
+  "submitted_at": "2023-10-27",   //можно убрать (можно не убирать без разнциы)
+  "created_at": "2023-10-20",     //можно убрать (можно не убирать без разнциы)
+  "target_progress": 20,
+  "current_progress": 5,
+  "duration_sec": null              //1800 и тп в секундах если тип таймер
+}

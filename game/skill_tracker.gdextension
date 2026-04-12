@@ -1,0 +1,7 @@
+[configuration]
+entry_symbol = "skill_tracker_library_init"
+compatibility_minimum = 4.2
+
+[libraries]
+macos.debug = "res://bin/libskilltracker.macos.template_debug.arm64.dylib"
+macos.release = "res://bin/libskilltracker.macos.template_release.arm64.dylib"

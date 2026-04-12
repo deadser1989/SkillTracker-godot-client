@@ -5,3 +5,9 @@ compatibility_minimum = 4.2
 [libraries]
 macos.debug = "res://bin/libskilltracker.macos.template_debug.arm64.dylib"
 macos.release = "res://bin/libskilltracker.macos.template_release.arm64.dylib"
+
+windows.debug.x86_64 = "res://bin/libskilltracker.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://bin/libskilltracker.windows.template_release.x86_64.dll"
+
+linux.debug.x86_64 = "res://bin/libskilltracker.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://bin/libskilltracker.linux.template_release.x86_64.so"

@@ -1,6 +1,7 @@
 extends Control
 
 @onready var back_btn = $MarginContainer/VBoxContainer/HBoxContainer/BackBtn
+@onready var add_skill_btn = $MarginContainer/VBoxContainer/HBoxContainer/AddSkillBtn
 @onready var skill_filter_btn = $MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/SkillFilterBtn
 @onready var time_filter_btn = $MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/TimeFilterBtn
 
@@ -23,18 +24,29 @@ extends Control
 @onready var lvl_up_btn = $SkillWindow/MarginContainer/MainCol/HBoxContainer/LvlUpBtn
 @onready var upgrade_btn = $SkillWindow/MarginContainer/MainCol/HBoxContainer/UpgradeBtn
 
+@onready var add_skill_window = $AddSkillWindow
+@onready var name_input = $AddSkillWindow/MarginContainer/FormCol/NameInput
+@onready var desc_input = $AddSkillWindow/MarginContainer/FormCol/DescInput
+@onready var period_btn = $AddSkillWindow/MarginContainer/FormCol/PeriodBtn
+@onready var type_btn = $AddSkillWindow/MarginContainer/FormCol/TypeBtn
+@onready var duration_row = $AddSkillWindow/MarginContainer/FormCol/DurationRow
+@onready var duration_input = $AddSkillWindow/MarginContainer/FormCol/DurationRow/DurationInput
+@onready var cancel_btn = $AddSkillWindow/MarginContainer/FormCol/FormButtons/CancelBtn
+@onready var save_btn = $AddSkillWindow/MarginContainer/FormCol/FormButtons/SaveBtn
 
 var current_time_mode = 0  
 var selected_skill_id = "" 
 var selected_skill = null 
 
-var graph_labels =[] 
+var graph_labels = [] 
 var line_reading = []
 var line_fitness = []
-var line_language =[]
+var line_language = []
 var line_creative = []
 var bar_target = []
-var bar_current =[]
+var bar_current = []
+
+var server_history_data: Array = []
 
 func _ready():
 	back_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://shell.tscn"))
@@ -42,40 +54,39 @@ func _ready():
 	draw_area.resized.connect(draw_area.queue_redraw)
 	
 	skill_window.hide()
+	add_skill_window.hide()
+	duration_row.hide()
 	
 	close_btn.pressed.connect(_on_close_btn_pressed)
 	prog_slider.value_changed.connect(_on_slider_changed)
 	upgrade_btn.pressed.connect(_on_upgrade_btn_pressed)
 	lvl_up_btn.pressed.connect(_on_lvl_up_btn_pressed)
 	
-	GM.obligations_updated.connect(populate_active_tasks)
+	add_skill_btn.pressed.connect(_on_add_skill_btn_pressed)
+	cancel_btn.pressed.connect(_on_cancel_form_pressed)
+	save_btn.pressed.connect(_on_save_form_pressed)
+	type_btn.item_selected.connect(_on_type_btn_selected)
+	
+	GM.obligations_updated.connect(func(): setup_filters(); populate_active_tasks())
+	Net.action_updated.connect(func(_res_dict): fetch_history_from_server())
 	
 	setup_filters()
 	populate_active_tasks()
-	populate_history()
-	aggregate_data()
-	
-	await get_tree().process_frame
-	draw_area.queue_redraw()
+	fetch_history_from_server()
 
 func _process(_delta):
 	if skill_window.visible and selected_skill != null:
 		if selected_skill.is_timer_active():
-			upgrade_btn.get_node("Label").text = "Завершить досрочно[" + format_time(selected_skill.get_current_timer_sec()) + "]"
+			upgrade_btn.get_node("Label").text = "Завершить досрочно [" + format_time(selected_skill.get_current_timer_sec()) + "]"
 
 func format_time(seconds: float) -> String:
 	var m = int(seconds / 60.0)
 	var s = int(seconds) % 60
 	return "%02d:%02d" % [m, s]
 
-
 func setup_filters():
-	time_filter_btn.clear()
-	time_filter_btn.add_item("За последнюю неделю", 0)
-	time_filter_btn.add_item("За этот месяц", 1)
-	time_filter_btn.item_selected.connect(_on_time_filter_changed)
-	
 	skill_filter_btn.clear()
+	
 	skill_filter_btn.add_item("Общая активность", 0)
 	skill_filter_btn.set_item_metadata(0, "")
 	skill_filter_btn.add_separator()
@@ -91,7 +102,6 @@ func setup_filters():
 	
 	var tasks = GM.get_all_obligations()
 	if tasks.size() > 0:
-		var idx = 8
 		for task in tasks:
 			var prefix = ""
 			if task["cd_type"] == 1: prefix = "[ЕЖЕДНЕВНО] "
@@ -100,10 +110,17 @@ func setup_filters():
 			
 			skill_filter_btn.add_item(" " + prefix + task["name"])
 			var last_idx = skill_filter_btn.get_item_count() - 1
-			skill_filter_btn.set_item_metadata(last_idx, task["id"])
+			skill_filter_btn.set_item_metadata(last_idx, str(task["id"]))
 
-	skill_filter_btn.item_selected.connect(_on_skill_filter_changed)
+	if not skill_filter_btn.item_selected.is_connected(_on_skill_filter_changed):
+		skill_filter_btn.item_selected.connect(_on_skill_filter_changed)
 	
+	time_filter_btn.clear()
+	time_filter_btn.add_item("За последнюю неделю", 0)
+	time_filter_btn.add_item("За этот месяц", 1)
+	if not time_filter_btn.item_selected.is_connected(_on_time_filter_changed):
+		time_filter_btn.item_selected.connect(_on_time_filter_changed)
+
 func _on_time_filter_changed(index: int):
 	current_time_mode = index
 	aggregate_data()
@@ -116,6 +133,87 @@ func _on_skill_filter_changed(index: int):
 	aggregate_data()
 	draw_area.queue_redraw()
 
+func _on_add_skill_btn_pressed():
+	name_input.text = ""
+	desc_input.text = ""
+	period_btn.selected = 0
+	type_btn.selected = 0
+	duration_input.text = "10"
+	duration_row.hide()
+	add_skill_window.show()
+
+func _on_cancel_form_pressed():
+	add_skill_window.hide()
+
+func _on_type_btn_selected(index: int):
+	if index == 1: duration_row.show()
+	else: duration_row.hide()
+
+func _on_save_form_pressed():
+	var s_name = name_input.text.strip_edges()
+	if s_name == "": return
+	
+	var cd_str = "D"
+	if period_btn.selected == 1: cd_str = "W"
+	elif period_btn.selected == 2: cd_str = "M"
+	
+	var duration = null
+	if type_btn.selected == 1:
+		var mins = max(1, int(duration_input.text))
+		duration = mins * 60
+
+	var payload = {
+		"node_name": s_name,
+		"node_info": desc_input.text.strip_edges(),
+		"cooldown": cd_str,
+		"duration_sec": duration,
+		"area": 4, 
+		"node_type": "A"
+	}
+	
+	Net._send_request("/tree/", HTTPClient.METHOD_POST, payload, func(code, body):
+		if code == 201 or code == 200:
+			var response_dict = JSON.parse_string(body.get_string_from_utf8())
+			if response_dict:
+				var custom_node = SkillNode.new()
+				custom_node.set_skill_id(str(response_dict.get("id", "")))
+				custom_node.set_skill_name(response_dict.get("node_name", s_name))
+				custom_node.set_skill_title(response_dict.get("node_info", ""))
+				
+				if cd_str == "D": custom_node.set_cooldown_type(1)
+				elif cd_str == "W": custom_node.set_cooldown_type(2)
+				elif cd_str == "M": custom_node.set_cooldown_type(3)
+				
+				if duration != null:
+					custom_node.set_task_type(1)
+					custom_node.set_skill_time(duration)
+				else:
+					custom_node.set_task_type(0)
+					custom_node.set_skill_time(-1)
+					
+				custom_node.set_skill_subject_area(4)
+				custom_node.set_skill_level(1)
+				custom_node.set_base_progress(int(response_dict.get("target_progress", 1)))
+				custom_node.refresh_target_by_level()
+				custom_node.set_skill_state(2)
+				
+				GM.add_obligation(custom_node)
+				setup_filters()
+				populate_active_tasks()
+	)
+	add_skill_window.hide()
+
+func fetch_history_from_server():
+	Net._send_request("/tree/history/", HTTPClient.METHOD_GET, {}, func(code, body):
+		if code == 200:
+			var data = JSON.parse_string(body.get_string_from_utf8())
+			if typeof(data) == TYPE_ARRAY:
+				server_history_data = data
+				populate_history()
+				aggregate_data()
+				draw_area.queue_redraw()
+	)
+
 func aggregate_data():
 	graph_labels.clear()
 	line_reading.clear()
@@ -127,6 +225,13 @@ func aggregate_data():
 	
 	var days_count = 7 if current_time_mode == 0 else 31
 	for i in range(days_count):
+		line_reading.append(0)
+		line_fitness.append(0)
+		line_language.append(0)
+		line_creative.append(0)
+		bar_target.append(0)
+		bar_current.append(0)
+		
 		if current_time_mode == 0:
 			var d_names = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
 			graph_labels.append(d_names[i])
@@ -134,21 +239,42 @@ func aggregate_data():
 			if (i + 1) == 1 or (i + 1) % 5 == 0 or (i + 1) == 31: graph_labels.append(str(i + 1))
 			else: graph_labels.append("")
 
-	if selected_skill_id == "" or selected_skill_id.begins_with("area_"):
-		for i in range(days_count):
-			line_reading.append(randi() % 20 + 5)
-			line_fitness.append(randi() % 30 + 10)
-			line_language.append(randi() % 15 + 2)
-			line_creative.append(randi() % 25 + 5)
-	else:
-		var target_static = 30
+	var now = Time.get_unix_time_from_system()
+	for entry in server_history_data:
+		var date_str = entry.get("date", "")
+		if date_str == "": continue
+		var parts = date_str.split("-")
+		if parts.size() < 3: continue
+		
+		var dict = {"year": int(parts[0]), "month": int(parts[1]), "day": int(parts[2]), "hour": 12, "minute": 0, "second": 0}
+		var entry_time = Time.get_unix_time_from_datetime_dict(dict)
+		var diff_days = int((now - entry_time) / 86400)
+		
+		if diff_days >= 0 and diff_days < days_count:
+			var idx = days_count - 1 - diff_days
+			var prog = int(entry.get("progress_added", 1))
+			var s_id = str(entry.get("skill_id", ""))
+			
+			if selected_skill_id == "" or selected_skill_id.begins_with("area_"):
+				var node_area = -1
+				for t in GM.get_all_obligations():
+					if str(t["id"]) == s_id:
+						node_area = int(t.get("area", -1))
+						break
+				if node_area == 0: line_reading[idx] += prog
+				elif node_area == 1: line_fitness[idx] += prog
+				elif node_area == 2: line_language[idx] += prog
+				elif node_area == 3: line_creative[idx] += prog
+			else:
+				if s_id == selected_skill_id: bar_current[idx] += prog
+
+	if selected_skill_id != "" and not selected_skill_id.begins_with("area_"):
+		var current_target = 10
 		for t in GM.get_all_obligations():
-			if t["id"] == selected_skill_id:
-				target_static = t["target"]
+			if str(t["id"]) == selected_skill_id:
+				current_target = int(t.get("target", 10))
 				break
-		for i in range(days_count):
-			bar_target.append(target_static)
-			bar_current.append(randi() % (target_static + (target_static / 2)))
+		for i in range(days_count): bar_target[i] = current_target
 
 func _on_graph_draw():
 	if draw_area.size.x == 0 or draw_area.size.y == 0: return 
@@ -243,13 +369,7 @@ func populate_active_tasks():
 	for child in active_list.get_children(): child.queue_free()
 	
 	var tasks = GM.get_all_obligations()
-	if tasks.size() == 0:
-		tasks =[
-			{"id": "test_1", "name": "Отжимания", "cd_type": 1, "task_type": 0, "current": 10, "target": 50, "level": 2},
-			{"id": "test_2", "name": "Чтение", "cd_type": 1, "task_type": 0, "current": 2, "target": 20, "level": 1}
-		]
-
-	var active_t =[]
+	var active_t = []
 	var done_t = []
 
 	for task in tasks:
@@ -259,17 +379,14 @@ func populate_active_tasks():
 	for t in active_t: create_stat_todo_item(t, false)
 	for t in done_t: create_stat_todo_item(t, true)
 
-
 func create_stat_todo_item(task, is_done):
 	var btn = Button.new()
 	btn.custom_minimum_size = Vector2(0, 45)
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	
 	var sb = StyleBoxFlat.new()
-	sb.corner_radius_top_left = 12
-	sb.corner_radius_top_right = 12
-	sb.corner_radius_bottom_left = 12
-	sb.corner_radius_bottom_right = 12
+	sb.corner_radius_top_left = 12; sb.corner_radius_top_right = 12
+	sb.corner_radius_bottom_left = 12; sb.corner_radius_bottom_right = 12
 	
 	if is_done:
 		btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5)) 
@@ -291,26 +408,23 @@ func create_stat_todo_item(task, is_done):
 	
 	btn.text = "   " + prefix + task["name"] + "  (" + progress_txt + ")"
 	
-	var t_id = task["id"]
-	btn.pressed.connect(func(): recreate_and_open_skill(t_id))
-	
+	btn.pressed.connect(func(): recreate_and_open_skill(task["id"]))
 	active_list.add_child(btn)
 
 func populate_history():
 	for child in history_list.get_children(): child.queue_free()
-	
-	if not GM.has_method("get_action_history") or GM.get_action_history().size() == 0:
+	if server_history_data.size() == 0:
 		var lbl = Label.new()
-		lbl.text = "   Вы пока не совершали никаких действий  "
+		lbl.text = "   Вы пока не совершали никаких действий   "
 		lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 		history_list.add_child(lbl)
 		return
 
-	var history = GM.get_action_history()
-	for act in history:
+	for act in server_history_data:
 		var lbl = Label.new()
 		lbl.custom_minimum_size = Vector2(0, 30)
-		lbl.text = "  " + act["date"] + ": ID " + act["skill_id"] + " (+ " + str(act["progress_added"]) + " XP)"
+		var skill_name = act.get("node_name", "Навык ID: " + str(act.get("skill_id", "")))
+		lbl.text = "  " + act["date"] + ": " + skill_name + " (+" + str(act["progress_added"]) + ")"
 		history_list.add_child(lbl)
 
 func recreate_and_open_skill(task_id):
@@ -323,15 +437,19 @@ func recreate_and_open_skill(task_id):
 	var t_target = 1
 	var cd_type = 0
 	var t_type = 0
+	var t_time = -1
 	
 	for t in GM.get_all_obligations():
-		if t["id"] == task_id:
+		if str(t["id"]) == str(task_id):
 			t_name = t["name"]
 			t_lvl = t["level"]
 			t_cur = t["current"]
 			t_target = t["target"]
 			cd_type = t["cd_type"]
 			t_type = t["task_type"]
+			
+			if t.has("duration_sec"): t_time = int(t["duration_sec"])
+			elif t.has("skill_time"): t_time = int(t["skill_time"])
 			break
 			
 	selected_skill.set_skill_name(t_name)
@@ -345,6 +463,7 @@ func recreate_and_open_skill(task_id):
 	
 	selected_skill.set_cooldown_type(cd_type)
 	selected_skill.set_task_type(t_type)
+	selected_skill.set_skill_time(t_time)
 	selected_skill.set_skill_state(2) 
 	
 	open_skill_window(selected_skill)
@@ -369,8 +488,7 @@ func open_skill_window(node):
 	elif cd == 3: period_text = "[Ежемесячно]"
 	
 	var state = node.get_skill_state()
-	
-	if state == 2: # В статистике только ACTIVE задачи
+	if state == 2: 
 		if node.get_task_type() == 1: 
 			extra_info.text = period_text + "\nНа время: " + str(node.get_skill_time() / 60) + " мин."
 			if node.has_method("is_timer_active") and node.is_timer_active(): 
@@ -426,13 +544,13 @@ func _on_upgrade_btn_pressed():
 		selected_skill.add_progress(add_amount)
 		GM.add_obligation(selected_skill) 
 		
-	if add_amount > 0 and GM.has_method("log_action"):
-		GM.log_action(selected_skill.get_skill_id(), add_amount)
+	if add_amount > 0:
+		var raw_id = selected_skill.get_skill_id()
+		Net.send_action(int(raw_id), add_amount)
+		recreate_and_open_skill(raw_id)
+	else:
+		open_skill_window(selected_skill)
 
-	recreate_and_open_skill(selected_skill.get_skill_id())
-	populate_active_tasks() 
-	populate_history()
-		
 func _on_lvl_up_btn_pressed():
 	if selected_skill == null: return
 	var lvl = selected_skill.get_skill_level()

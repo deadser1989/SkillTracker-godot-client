@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import Profile, Node, ActionLog
+from .models import Profile, Node, ActionLog, Tree
 from django.db import transaction
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
@@ -12,15 +12,42 @@ def registry_service(serializer) -> Response:
         try:
             with transaction.atomic():
                 user = serializer.save()
-                Profile.objects.create(
+                profile = Profile.objects.create(
                     user   = user,
                     level  = 1,
                     streak = 0
                 )
+                
+                starter_branches = [
+                    {"area": Tree.AREA_READING,    "name": "ЧТЕНИЕ"},
+                    {"area": Tree.AREA_FITNESS,    "name": "СПОРТ"},
+                    {"area": Tree.AREA_LANGUAGE,   "name": "ЯЗЫКИ"},
+                    {"area": Tree.AREA_CREATIVITY, "name": "ТВОРЧЕСТВО"},
+                ]
+                
+                for branch in starter_branches:
+                    tree = Tree.objects.create(
+                        profile = profile,
+                        area    = branch["area"]
+                    )
+                    
+                    Node.objects.create(
+                        tree             = tree,
+                        parent           = None,
+                        node_name        = branch["name"],
+                        node_info        = "Дефолт",
+                        node_state       = Node.STATE_FINISHED,
+                        node_level       = 1,
+                        node_rarity      = Node.RARITY_COMMON,
+                        xp_reward        = 10,
+                        current_progress = 1,
+                        target_progress  = 1,
+                    )
+
             return Response(
                 {
-                "message": "User and profile created successfully.",
-                "user_id": user.pk
+                    "message": "User, profile and starter trees created successfully.",
+                    "user_id": user.pk
                 },
                 status=status.HTTP_201_CREATED
             )

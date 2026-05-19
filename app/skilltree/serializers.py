@@ -24,9 +24,8 @@ class TreeSerializer(serializers.ModelSerializer):
         
         fields = [
             'id', 'area', 'verbose_title',
-            'updated_at', 'created_at'
+            'updated_at', 'created_at', 'nodes'
         ]
-        
 
 class RegistrySerializer(serializers.ModelSerializer):
     class Meta:

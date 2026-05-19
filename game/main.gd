@@ -4,7 +4,6 @@ extends Node2D
 @onready var tree = $Tree
 @onready var camera = $Tree/Camera2D 
 @onready var fog = $Tree/FogOfWar
-#@onready var back_btn = $UI/HUD/TopLeft/VBoxContainer/HBoxContainer/BackButton
 
 @onready var skill_window = $UI/SkillWindow
 @onready var title_label = $UI/SkillWindow/MarginContainer/MainCol/Header/TitleBox/Title
@@ -60,26 +59,16 @@ func _ready():
 	
 	update_player_hud()
 
-	var fake_catalog = """[
-		{"id": 301, "node_name": "Чтение: 10 страниц", "node_info": "Прочитай 10 страниц.", "node_rarity": 0, "area": 0, "cooldown": "daily", "base_progress": 10, "xp_reward": 20},
-		{"id": 302, "node_name": "Скорочтение", "node_info": "Тренировка фокуса на время.", "node_rarity": 1, "area": 0, "cooldown": "daily", "duration_sec": 600, "xp_reward": 50},
-		{"id": 201, "node_name": "Питьевой режим", "node_info": "Выпить 2 стакана воды утром.", "node_rarity": 0, "area": 1, "cooldown": "daily", "base_progress": 2, "xp_reward": 15},
-		{"id": 202, "node_name": "Отжимания", "node_info": "От пола.", "node_rarity": 0, "area": 1, "cooldown": "daily", "base_progress": 20, "xp_reward": 30},
-		{"id": 203, "node_name": "Пробежка", "node_info": "Бежать полчаса.", "node_rarity": 1, "area": 1, "cooldown": "weekly", "duration_sec": 1800, "xp_reward": 100},
-		{"id": 401, "node_name": "10 новых слов", "node_info": "В словарь.", "node_rarity": 0, "area": 2, "cooldown": "daily", "base_progress": 10, "xp_reward": 25},
-		{"id": 501, "node_name": "Скетчинг", "node_info": "Быстрые наброски.", "node_rarity": 1, "area": 3, "cooldown": "daily", "duration_sec": 600, "xp_reward": 45}
-	]"""
-	GM.load_catalog_from_json(fake_catalog)
+	Net.tree_loaded.connect(_on_server_tree_downloaded)
+	Net.action_updated.connect(_on_server_action_processed)
+	Net.fetch_user_tree()
 
-	var fake_user_tree = """[
-		{ "id": 1000, "parent": null, "node_name": "ЧТЕНИЕ", "node_info": "Дефолт", "node_state": "finished", "node_level": 1, "node_rarity": 0, "area": 0, "base_progress": 1, "current_progress": 1, "target_progress": 1, "xp_reward": 10 },
-		{ "id": 1001, "parent": null, "node_name": "СПОРТ", "node_info": "Дефолт", "node_state": "finished", "node_level": 1, "node_rarity": 0, "area": 1, "base_progress": 1, "current_progress": 1, "target_progress": 1, "xp_reward": 10 },
-		{ "id": 1002, "parent": null, "node_name": "ЯЗЫКИ", "node_info": "Дефолт", "node_state": "finished", "node_level": 1, "node_rarity": 0, "area": 2, "base_progress": 1, "current_progress": 1, "target_progress": 1, "xp_reward": 10 },
-		{ "id": 1003, "parent": null, "node_name": "ТВОРЧЕСТВО", "node_info": "Дефолт", "node_state": "finished", "node_level": 1, "node_rarity": 0, "area": 3, "base_progress": 1, "current_progress": 1, "target_progress": 1, "xp_reward": 10 },
-		{ "id": 2003, "parent": 1001, "node_name": "Питьевой режим", "node_info": "2 стакана", "node_state": "active", "node_level": 0, "node_rarity": 0, "area": 1, "base_progress": 2, "current_progress": 0, "target_progress": 2, "xp_reward": 15, "cooldown": "daily" },
-		{ "id": 2004, "parent": 1000, "node_name": "Гарри Поттер", "node_info": "Прочесть книгу целиком", "node_state": "active", "node_level": 0, "node_rarity": 2, "area": 0, "base_progress": 1, "current_progress": 0, "target_progress": 1, "xp_reward": 500, "cooldown": "once" }
-	]"""
-	var parsed_nodes = GM.parse_user_tree(fake_user_tree)
+func _on_server_tree_downloaded(parsed_json_string: String):
+	for child in tree.get_children():
+		if child.has_method("get_skill_state"):
+			child.queue_free()
+
+	var parsed_nodes = GM.parse_user_tree(parsed_json_string)
 
 	for node in parsed_nodes:
 		tree.add_child(node)
@@ -89,23 +78,17 @@ func _ready():
 		if node.get_required_prev_skills().size() == 0:
 			var area = node.get_subject_area()
 			if area == 0: node.position = Vector2(0, -150)
-			if area == 1: node.position = Vector2(150, 0)
-			if area == 2: node.position = Vector2(0, 150)
-			if area == 3: node.position = Vector2(-150, 0)
+			elif area == 1: node.position = Vector2(150, 0)
+			elif area == 2: node.position = Vector2(0, 150)
+			elif area == 3: node.position = Vector2(-150, 0)
 			node.set_tree_depth(0)
 			node.set_layer_index(0)
 		else:
 			var parent = tree.find_skill_node(node.get_required_prev_skills()[0])
-			var child_idx = 0
-			for existing in tree.get_children():
-				if existing.has_method("get_skill_state") and existing != node:
-					var r = existing.get_required_prev_skills()
-					if r.size() > 0 and r[0] == parent.get_skill_id():
-						child_idx = 1 
-						
-			tree.place_node_on_map(node, parent, child_idx) 
+			if parent:
+				tree.place_node_on_map(node, parent, 0) 
 			
-		if node.get_skill_state() == 2 or node.get_skill_state() == 3:
+		if node.get_skill_state() >= 2:
 			GM.add_obligation(node)
 			
 	var all_nodes_in_tree = tree.get_children()
@@ -115,7 +98,31 @@ func _ready():
 				spawn_branches_for_node(child)
 	
 	refresh_todo_list()
-	
+
+func _on_server_action_processed(response: Dictionary):
+	var s_id = str(response.get("node_id", ""))
+	var node = tree.find_skill_node(s_id)
+	if node:
+		node.setSkillCurProg(response.get("current_progress", 0))
+		node.set_base_progress(response.get("target_progress", 1))
+		node.setSkillState(response.get("node_state", 2))
+		
+		if response.get("node_just_finished", false):
+			tree.reveal_successors(node)
+			spawn_branches_for_node(node)
+			if selected_skill == node:
+				skill_window.hide()
+				selected_skill = null
+				
+		var server_level = response.get("profile_level", Profile.get_level())
+		if server_level != Profile.get_level():
+			Profile.set_level(server_level)
+			
+		if selected_skill == node:
+			open_skill_window(node)
+			
+	Net.fetch_user_tree()
+
 func spawn_branches_for_node(parent_node):
 	if parent_node.get_tree_depth() >= 6: return
 	
@@ -140,7 +147,7 @@ func _process(_delta):
 	
 	if skill_window.visible and selected_skill != null:
 		if selected_skill.is_timer_active():
-			upgrade_btn.get_node("Label").text = "Завершить досрочно[" + format_time(selected_skill.get_current_timer_sec()) + "]"
+			upgrade_btn.get_node("Label").text = "Завершить досрочно [" + format_time(selected_skill.get_current_timer_sec()) + "]"
 			
 	if not GM.can_start_new_skill():
 		cooldown_text.text = format_time(GM.get_cooldown_time_left())
@@ -210,15 +217,15 @@ func _on_close_btn_pressed():
 
 func open_skill_window(node):
 	selected_skill = node
-	title_label.text = "" + node.get_skill_name() + ""
-	desc_label.text = "" + node.get_skill_title() + ""
+	title_label.text = node.get_skill_name()
+	desc_label.text = node.get_skill_title()
 	prog_row.hide()
 	
 	if node.get_skill_level() == 0:
 		lvl_label.text = "Разовый навык"
 		lvl_up_btn.hide()
 	else:
-		lvl_label.text = "Уровень: " + str(node.get_skill_level()) + ""
+		lvl_label.text = "Уровень: " + str(node.get_skill_level())
 		if node.get_skill_state() >= 2: lvl_up_btn.show()
 		else: lvl_up_btn.hide()
 	
@@ -231,14 +238,14 @@ func open_skill_window(node):
 	var state = node.get_skill_state()
 	
 	if state == 1:
-		extra_info.text = "" + period_text + "\nТребует энергии для разблокировки."
+		extra_info.text = period_text + "\nТребует энергии для разблокировки."
 		upgrade_btn.get_node("Label").text = "ИЗУЧИТЬ"
 		upgrade_btn.show()
 		upgrade_btn.disabled = false
 		
 	elif state == 2: 
 		if node.get_task_type() == 1: 
-			extra_info.text = "" + period_text + "\nНа время: " + str(node.get_skill_time() / 60) + " мин."
+			extra_info.text = period_text + "\nНа время: " + str(node.get_skill_time() / 60) + " мин."
 			if node.is_timer_active(): 
 				upgrade_btn.get_node("Label").text = "Завершить " + format_time(node.get_current_timer_sec())
 			else: 
@@ -246,7 +253,7 @@ func open_skill_window(node):
 		else: 
 			var c = node.get_skill_cur_prog()
 			var n = node.get_skill_nes_prog()
-			extra_info.text = "" + period_text + "\nЦель: " + str(c) + " / " + str(n) + ""
+			extra_info.text = period_text + "\nЦель: " + str(c) + " / " + str(n)
 			
 			var diff = n - c
 			if diff > 1:
@@ -263,7 +270,7 @@ func open_skill_window(node):
 		upgrade_btn.disabled = false
 		
 	elif state == 3:
-		extra_info.text = "" + period_text + "\nЗавершено!"
+		extra_info.text = period_text + "\nЗавершено!"
 		upgrade_btn.hide() 
 		
 	tooltip.hide() 
@@ -283,31 +290,32 @@ func _on_upgrade_btn_pressed():
 			GM.add_obligation(selected_skill)
 			spawn_branches_for_node(selected_skill) 
 			open_skill_window(selected_skill)
+			Net.send_action(int(selected_skill.get_skill_id()), 0)
 			return 
 			
 	if state == 2: 
+		var add_amount = 0
 		if selected_skill.get_task_type() == 1: 
 			if selected_skill.is_timer_active():
 				if selected_skill.has_method("force_finish_timer"):
 					selected_skill.force_finish_timer() 
+					add_amount = 1
 			else:
 				selected_skill.start_progress_time() 
 			GM.add_obligation(selected_skill) 
 		else: 
-			var add_amount = 1
+			add_amount = 1
 			if prog_row.visible:
 				add_amount = int(prog_slider.value)
 			
 			selected_skill.add_progress(add_amount)
 			GM.add_obligation(selected_skill) 
 			
-		open_skill_window(selected_skill)
-		
-		if selected_skill.get_skill_state() == 3: 
-			Profile.add_xp(selected_skill.get_skill_xp())
-			tree.reveal_successors(selected_skill)
-			skill_window.hide()
-			
+		if add_amount > 0:
+			Net.send_action(int(selected_skill.get_skill_id()), add_amount)
+		else:
+			open_skill_window(selected_skill)
+
 func _on_lvl_up_btn_pressed():
 	if selected_skill == null: return
 	var lvl = selected_skill.get_skill_level()
@@ -337,8 +345,8 @@ func _on_todo_toggle():
 func refresh_todo_list():
 	for child in task_list_container.get_children(): child.queue_free()
 	var tasks = GM.get_all_obligations()
-	var active_tasks =[]
-	var done_tasks =[]
+	var active_tasks = []
+	var done_tasks = []
 	
 	for t in tasks:
 		if t["current"] >= t["target"]: done_tasks.append(t)
@@ -384,11 +392,15 @@ func create_todo_item(task, is_done):
 	task_list_container.add_child(item_bg)
 
 func update_player_hud():
-	lvl_display.text = "Level " + str(Profile.get_level())
-	xp_bar.max_value = Profile.get_max_xp()
+	var level_val = Profile.get_level() if Profile.has_method("get_level") else 1
+	var xp_val = Profile.get_xp() if Profile.has_method("get_xp") else 0
+	var max_xp_val = Profile.get_max_xp() if Profile.has_method("get_max_xp") else 100
+	
+	lvl_display.text = "Level " + str(level_val)
+	xp_bar.max_value = max_xp_val
 	var tw = create_tween()
-	tw.tween_property(xp_bar, "value", Profile.get_xp(), 0.4).set_trans(Tween.TRANS_QUAD)
-	xp_text_label.text = str(Profile.get_xp()) + " / " + str(Profile.get_max_xp()) + " XP"
+	tw.tween_property(xp_bar, "value", xp_val, 0.4).set_trans(Tween.TRANS_QUAD)
+	xp_text_label.text = str(xp_val) + " / " + str(max_xp_val) + " XP"
 
 func update_energy_hud():
 	if GM.can_start_new_skill(): energy_text.text = "Энергия: ГОТОВО"
@@ -420,9 +432,9 @@ func spawn_new_random_skill(child_index: int, parent_node: SkillNode):
 		
 		if data.has("cooldown"):
 			var cd = data["cooldown"]
-			if cd == "daily": new_node.set_cooldown_type(1)
-			elif cd == "weekly": new_node.set_cooldown_type(2)
-			elif cd == "monthly": new_node.set_cooldown_type(3)
+			if cd == "daily" or cd == "D": new_node.set_cooldown_type(1)
+			elif cd == "weekly" or cd == "W": new_node.set_cooldown_type(2)
+			elif cd == "monthly" or cd == "M": new_node.set_cooldown_type(3)
 			else: new_node.set_cooldown_type(0) 
 			
 		if data.has("duration_sec") and data["duration_sec"] != null:
@@ -451,9 +463,6 @@ func spawn_new_random_skill(child_index: int, parent_node: SkillNode):
 	setup_node_graphics(new_node)
 	tree.place_node_on_map(new_node, parent_node, child_index)
 	
-#func _on_back_btn_pressed():
-	#get_tree().change_scene_to_file("res://shell.tscn")
-	#
 func setup_node_graphics(node: SkillNode):
 	node.set_tex_border(load("res://assets/icons/skill-node-5.png"))
 	node.set_icon_fit_on(load("res://assets/icons/gantelya.png"))
@@ -462,5 +471,8 @@ func setup_node_graphics(node: SkillNode):
 	node.set_icon_read_off(load("res://assets/icons/book_skill_tree.png"))
 	node.set_icon_creativity_on(load("res://assets/icons/lampochka.png"))
 	node.set_icon_creativity_off(load("res://assets/icons/lampochka.png"))
+	node.set_icon_language_on(load("res://assets/icons/language.png"))
+	node.set_icon_language_off(load("res://assets/icons/language.png"))
+	
 	node.set_tex_flash(load("res://assets/icons/svet.png"))
 	node.set_tex_star(load("res://assets/icons/mini-star.png"))

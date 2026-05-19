@@ -35,13 +35,13 @@ def habits_view(request):
 def login_view(request):
     
     return login_service(request.data)
-        
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def history_view(request):
     user_profile = request.user.profile
-    logs = ActionLog.objects.filter(profile=user_profile).select_related('node').order_by('-date')
+    logs = ActionLog.objects.filter(profile=user_profile).select_related('node').order_by('-submitted_at')
     
     res = []
     for log in logs:
@@ -79,6 +79,6 @@ except Exception as ex:
     print(f"Catalog loading error: {ex}")
     
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def catalog_view(request):
     return Response( CATALOG_DATA, status=status.HTTP_200_OK )

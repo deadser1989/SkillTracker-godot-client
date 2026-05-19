@@ -1,0 +1,27 @@
+[
+  {"id": "first_step", "name": "Первый шаг", "desc": "Завершите свое первое действие", "type": "total", "target": 1},
+  {"id": "active_user", "name": "Вкатился", "desc": "Выполните 10 действий", "type": "total", "target": 10},
+  {"id": "hard_worker", "name": "Постоянство", "desc": "Выполните 50 действий суммарно", "type": "total", "target": 50},
+  {"id": "legend", "name": "Герой нашего времени", "desc": "Выполните 200 действий в системе", "type": "total", "target": 200},
+
+  {"id": "streak_3", "name": "Три дня порядка", "desc": "Держите серию активности 3 дня подряд", "type": "streak", "target": 3},
+  {"id": "streak_7", "name": "Неделя в тонусе", "desc": "Держите серию активности 7 дней подряд", "type": "streak", "target": 7},
+  {"id": "streak_14", "name": "Профессионал", "desc": "Держите серию активности 14 дней подряд", "type": "streak", "target": 14},
+  {"id": "streak_30", "name": "Железная воля", "desc": "Удерживайте стрик в течение 30 дней", "type": "streak", "target": 30},
+
+  {"id": "read_1", "name": "Страница за страницей", "desc": "Сделайте первое действие в ветке Чтения", "type": "area", "area_id": 0, "target": 1},
+  {"id": "read_10", "name": "Книжный червь", "desc": "Проявите активность в Чтении 10 раз", "type": "area", "area_id": 0, "target": 10},
+  {"id": "read_50", "name": "Интеллектуал", "desc": "Проявите активность в Чтении 50 раз", "type": "area", "area_id": 0, "target": 50},
+
+  {"id": "sport_1", "name": "Разминка", "desc": "Выполните первое спортивное действие", "type": "area", "area_id": 1, "target": 1},
+  {"id": "sport_10", "name": "Железный пресс", "desc": "Выполните 10 спортивных тренировок", "type": "area", "area_id": 1, "target": 10},
+  {"id": "sport_50", "name": "Машина", "desc": "Выполните 50 спортивных тренировок", "type": "area", "area_id": 1, "target": 50},
+
+  {"id": "lang_1", "name": "Hello World", "desc": "Начните изучение иностранных языков", "type": "area", "area_id": 2, "target": 1},
+  {"id": "lang_10", "name": "Полиглот", "desc": "Потренируйте языки 10 раз", "type": "area", "area_id": 2, "target": 10},
+  {"id": "lang_50", "name": "Дипломат", "desc": "Потренируйте языки 50 раз", "type": "area", "area_id": 2, "target": 50},
+
+  {"id": "craft_1", "name": "Вдохновение", "desc": "Сделайте первое творческое действие", "type": "area", "area_id": 3, "target": 1},
+  {"id": "craft_10", "name": "Творец", "desc": "Выполните 10 творческих сессий", "type": "area", "area_id": 3, "target": 10},
+  {"id": "craft_50", "name": "Шедевр готов", "desc": "Выполните 50 творческих сессий", "type": "area", "area_id": 3, "target": 50}
+]

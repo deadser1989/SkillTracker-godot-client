@@ -168,67 +168,123 @@
     }
 
 
-    Array SkillManager::parse_user_tree(const String& json_string) {
-        Array parsed_nodes;
+ Array SkillManager::parse_user_tree(const String& json_string) {
+    Array parsed_nodes;
+    Ref<JSON> json = memnew(JSON);
+    
+    if (json->parse(json_string) != OK) {
+        UtilityFunctions::print("ERROR: Ошибка парсинга JSON дерева!");
+        return parsed_nodes;
+    }
+    
+    Variant root_data = json->get_data();
+    if (root_data.get_type() != Variant::ARRAY) {
+        return parsed_nodes;
+    }
+    
+    Array root_array = root_data;
+    if (root_array.size() == 0) return parsed_nodes;
 
-        Ref<JSON> json = memnew(JSON);
-        if (json->parse(json_string) != OK) {
-            return parsed_nodes;
+    bool is_django_format = false;
+    Dictionary first_elem = root_array[0];
+    if (first_elem.has("nodes")) {
+        is_django_format = true;
+    }
+
+    auto parse_node_dict = [](Dictionary dict, int fallback_area) -> SkillNode* {
+        SkillNode* new_node = memnew(SkillNode);
+        
+        if (dict["id"].get_type() == Variant::INT) {
+            new_node->setSkillId(String::num_int64((int)dict["id"]));
+        } else {
+            new_node->setSkillId(dict["id"]);
         }
         
-        Array nodes_array = json->get_data();
+        new_node->setSkillName(dict.get("node_name", "New Skill"));
+        new_node->setSkillTitle(dict.get("node_info", "Description"));
+        new_node->setSkillLevel((int)dict.get("node_level", 1));
+        new_node->setSkillRarity((int)dict.get("node_rarity", SkillNode::RARITY_COMMON));
+        new_node->setSkillXP((int)dict.get("xp_reward", 10));
+        
+        int area_val = dict.get("area", fallback_area);
+        new_node->setSkillSubjectArea(area_val);
+        
+        new_node->setSkillCurProg((int)dict.get("current_progress", 0));
+        
+        int target_prog = 1;
+        if (dict.has("target_progress")) target_prog = (int)dict["target_progress"];
+        else if (dict.has("base_progress")) target_prog = (int)dict["base_progress"];
+        
+        new_node->set_base_progress(target_prog);
+        new_node->refresh_target_by_level();
 
-        for (int i = 0; i < nodes_array.size(); i++) {
-            Dictionary dict = nodes_array[i];
-            SkillNode* new_node = memnew(SkillNode);
-            
-            new_node->setSkillId(String::num_int64((int)dict["id"]));
-            new_node->setSkillName(dict["node_name"]);
-            new_node->setSkillTitle(dict["node_info"]);
-            
-            new_node->setSkillLevel((int)dict.get("node_level", 1));
-            new_node->setSkillRarity((int)dict.get("node_rarity", SkillNode::RARITY_COMMON));
-            new_node->setSkillXP((int)dict.get("xp_reward", 10));
-            new_node->setSkillSubjectArea((int)dict.get("area", SkillNode::AREA_CUSTOM));
-            new_node->setSkillCurProg((int)dict.get("current_progress", 0));
-            
-            new_node->set_base_progress((int)dict.get("target_progress", 1));
-            new_node->refresh_target_by_level();
-
-            String cooldown_str = dict.get("cooldown", "once");
-            if (cooldown_str == "daily") new_node->setCooldownType(SkillNode::CD_DAILY);
-            else if (cooldown_str == "weekly") new_node->setCooldownType(SkillNode::CD_WEEKLY);
-            else if (cooldown_str == "monthly") new_node->setCooldownType(SkillNode::CD_MONTHLY);
+        Variant cd_val = dict.get("cooldown", "once");
+        if (cd_val.get_type() == Variant::INT) {
+            new_node->setCooldownType((int)cd_val);
+        } else {
+            String cooldown_str = cd_val;
+            if (cooldown_str == "daily" || cooldown_str == "D") new_node->setCooldownType(SkillNode::CD_DAILY);
+            else if (cooldown_str == "weekly" || cooldown_str == "W") new_node->setCooldownType(SkillNode::CD_WEEKLY);
+            else if (cooldown_str == "monthly" || cooldown_str == "M") new_node->setCooldownType(SkillNode::CD_MONTHLY);
             else new_node->setCooldownType(SkillNode::CD_ONCE);
+        }
 
-            Variant dur_val = dict.get("duration_sec", Variant());
-            if (dur_val.get_type() != Variant::NIL && (int)dur_val > 0) {
-                new_node->setTaskType(SkillNode::TASK_TIMER);
-                new_node->setSkillTime((int)dur_val);
-            } else {
-                new_node->setTaskType(SkillNode::TASK_MANUAL);
-                new_node->setSkillTime(-1);
-            }
+        Variant dur_val = dict.get("duration_sec", Variant());
+        if (dur_val.get_type() != Variant::NIL && (int)dur_val > 0) {
+            new_node->setTaskType(SkillNode::TASK_TIMER);
+            new_node->setSkillTime((int)dur_val);
+        } else {
+            new_node->setTaskType(SkillNode::TASK_MANUAL);
+            new_node->setSkillTime(-1);
+        }
 
-            String s_state = dict["node_state"];
+        Variant state_val = dict.get("node_state", "hidden");
+        if (state_val.get_type() == Variant::INT) {
+            new_node->setSkillState((int)state_val);
+        } else {
+            String s_state = state_val;
             if (s_state == "hidden") new_node->setSkillState(SkillNode::STATE_HIDDEN);
             else if (s_state == "revealed") new_node->setSkillState(SkillNode::STATE_REVEALED);
             else if (s_state == "active") new_node->setSkillState(SkillNode::STATE_ACTIVE);
             else new_node->setSkillState(SkillNode::STATE_FINISHED);
+        }
 
-            Variant parent_val = dict.get("parent", Variant());
-            if (parent_val.get_type() != Variant::NIL) {
-                PackedStringArray reqs;
+        Variant parent_val = dict.get("parent", Variant());
+        if (parent_val.get_type() != Variant::NIL) {
+            PackedStringArray reqs;
+            if (parent_val.get_type() == Variant::INT) {
                 reqs.append(String::num_int64((int)parent_val));
-                new_node->setRequiredPrevSkills(reqs);
+            } else {
+                reqs.append(parent_val);
             }
-            
-            parsed_nodes.append(new_node);
+            new_node->setRequiredPrevSkills(reqs);
         }
         
-        UtilityFunctions::print("User tree parsedm nodes count: ", parsed_nodes.size());
-        return parsed_nodes;
+        return new_node;
+    };
+
+    if (is_django_format) {
+        for (int i = 0; i < root_array.size(); i++) {
+            Dictionary area_dict = root_array[i];
+            int area_id = area_dict.get("area", SkillNode::AREA_CUSTOM);
+            Array nodes_array = area_dict.get("nodes", Array());
+            
+            for (int j = 0; j < nodes_array.size(); j++) {
+                Dictionary node_dict = nodes_array[j];
+                parsed_nodes.append(parse_node_dict(node_dict, area_id));
+            }
+        }
+    } else {
+        for (int i = 0; i < root_array.size(); i++) {
+            Dictionary node_dict = root_array[i];
+            parsed_nodes.append(parse_node_dict(node_dict, SkillNode::AREA_CUSTOM));
+        }
     }
+    
+    UtilityFunctions::print("Tree parsed successfully. Total nodes: ", parsed_nodes.size());
+    return parsed_nodes;
+}
+
 
     void SkillManager::add_obligation(SkillNode* node) {
         if (!node) return;

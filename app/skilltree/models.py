@@ -59,7 +59,7 @@ class ActionLog( models.Model ):
             MaxValueValidator(1000000000),
         ],
         blank=False,
-        null=False        
+        null=False
     )
     submitted_at = models.DateField(auto_now_add=True)
 

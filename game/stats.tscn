@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://ceuus4q57yog2" path="res://stats.gd" id="1_adv4l"]
 [ext_resource type="Texture2D" uid="uid://cdvqbn427rvju" path="res://assets/bg/image.png" id="1_qkx3n"]
-[ext_resource type="FontFile" uid="uid://c471kb8a1ixdj" path="res://fonts/20647.ttf" id="2_74t8q"]
 [ext_resource type="Texture2D" uid="uid://d1w60kucs561a" path="res://assets/bg/blf-2.0.png" id="2_gde30"]
 [ext_resource type="Texture2D" uid="uid://tsvvmpjgg2qi" path="res://assets/bg/exitbtn-mini.png" id="4_af2q3"]
 [ext_resource type="Texture2D" uid="uid://bvpdo30c3w5wd" path="res://assets/bg/0-2.png" id="5_agoph"]
@@ -10,36 +9,47 @@
 [ext_resource type="Texture2D" uid="uid://bvgenv1wmgbu5" path="res://assets/bg/0-1.png" id="6_m8qmt"]
 [ext_resource type="FontFile" uid="uid://dke6bav3edcvi" path="res://assets/icons/18959.ttf" id="6_y88q5"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gde30"]
+bg_color = Color(0.15222919, 0.07946294, 0.30129856, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9098039, 0.65882355, 0.9411765, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.6312006, 0.26582405, 0.8170223, 0.6313726)
+shadow_size = 10
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_adv4l"]
-bg_color = Color(0.17254902, 0.09803922, 0.37254903, 0.8)
+bg_color = Color(0.15294118, 0.078431375, 0.3019608, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 1
-border_color = Color(0.57515323, 0.38541377, 0.47236705, 1)
+border_color = Color(0.83137256, 0.59607846, 0.8745098, 1)
 corner_radius_top_left = 15
 corner_radius_top_right = 15
 corner_radius_bottom_right = 15
 corner_radius_bottom_left = 15
-shadow_color = Color(0.50980395, 0.18039216, 0.45490196, 0.23529412)
-shadow_size = 5
-
-[sub_resource type="SystemFont" id="SystemFont_tgj6n"]
-subpixel_positioning = 0
+shadow_color = Color(0.85882354, 0.49803922, 0.7882353, 0.5254902)
+shadow_size = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r4or0"]
-bg_color = Color(0.17254902, 0.09803922, 0.37254903, 0.8)
+bg_color = Color(0.15294118, 0.078431375, 0.3019608, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 1
-border_color = Color(0.5764706, 0.38431373, 0.47058824, 1)
+border_color = Color(0.9098039, 0.65882355, 0.9411765, 1)
 corner_radius_top_left = 15
 corner_radius_top_right = 15
 corner_radius_bottom_right = 15
 corner_radius_bottom_left = 15
-shadow_color = Color(0.50980395, 0.18039216, 0.45490196, 0.23529412)
-shadow_size = 5
+shadow_color = Color(0.85882354, 0.49803922, 0.7882353, 0.5254902)
+shadow_size = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_af2q3"]
 bg_color = Color(0.10402443, 0.13844988, 0.28292668, 0.5921569)
@@ -97,6 +107,112 @@ expand_margin_bottom = 30.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_y88q5"]
 
+[sub_resource type="Theme" id="Theme_gde30"]
+default_font = ExtResource("6_y88q5")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y88q5"]
+bg_color = Color(0.105882354, 0.078431375, 0.21960784, 0.8980392)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.9098039, 0.65882355, 0.9411765, 0.76862746)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+shadow_color = Color(0.4, 0.34901962, 0.6156863, 0.5176471)
+shadow_size = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_od2vo"]
+bg_color = Color(0.14509805, 0.078431375, 0.23921569, 0.8039216)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7254902, 0.52156866, 0.7921569, 0.7137255)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu3h0"]
+bg_color = Color(0.14509805, 0.078431375, 0.23921569, 0.8039216)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7254902, 0.52156866, 0.7921569, 0.7137255)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tj6r6"]
+bg_color = Color(0.14509805, 0.078431375, 0.23921569, 0.8039216)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7254902, 0.52156866, 0.7921569, 0.7137255)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1gw14"]
+bg_color = Color(0.14386499, 0.07798419, 0.2375369, 0.8039216)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7254902, 0.52156866, 0.7921569, 0.7137255)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5mqph"]
+bg_color = Color(0.14509805, 0.078431375, 0.23921569, 0.8039216)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7254902, 0.52156866, 0.7921569, 0.7137255)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_604uq"]
+bg_color = Color(0.23921569, 0.09019608, 0.20784314, 0.8392157)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.8039216, 0.32941177, 0.41568628, 0.60784316)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+shadow_color = Color(0.7607843, 0.46666667, 0.7372549, 0.54901963)
+shadow_size = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ac1wr"]
+bg_color = Color(0.42352942, 0.6745098, 0.40784314, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.681681, 0.93837714, 0.58001745, 0.78039217)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 10
+shadow_color = Color(0.5147026, 0.72195846, 0.46950346, 0.36078432)
+shadow_size = 10
+
 [node name="StatsScreen" type="Control" unique_id=37030720]
 layout_mode = 3
 anchors_preset = 15
@@ -148,6 +264,17 @@ layout_mode = 2
 [node name="BackBtn" type="TextureButton" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1860504186]
 layout_mode = 2
 
+[node name="AddSkillBtn" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1905919017]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7041548, 0.7874021, 0.7805112, 1)
+theme_override_colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05882353, 0.03137255, 0.39215687, 1)
+theme_override_fonts/font = ExtResource("6_y88q5")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_gde30")
+text = "  добавить навык  "
+
 [node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1705472626]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -171,7 +298,7 @@ theme_override_colors/icon_pressed_color = Color(0.18431373, 0.105882354, 0.2941
 theme_override_colors/icon_hover_color = Color(0.8666667, 0.6117647, 0.92156863, 0.58431375)
 theme_override_colors/icon_hover_pressed_color = Color(0.80784315, 0.34117648, 0.67058825, 0.5803922)
 theme_override_colors/icon_disabled_color = Color(1, 1, 1, 0.4)
-theme_override_fonts/font = ExtResource("2_74t8q")
+theme_override_fonts/font = ExtResource("6_y88q5")
 theme_override_styles/normal = SubResource("StyleBoxFlat_adv4l")
 alignment = 1
 
@@ -179,9 +306,10 @@ alignment = 1
 custom_minimum_size = Vector2(250, 30)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.67058825, 0.7921569, 0.74509805, 1)
-theme_override_fonts/font = SubResource("SystemFont_tgj6n")
+theme_override_fonts/font = ExtResource("6_y88q5")
 theme_override_styles/normal = SubResource("StyleBoxFlat_r4or0")
 alignment = 1
+selected = 0
 item_count = 3
 popup/item_0/text = "За последнюю неделю"
 popup/item_0/id = 0
@@ -219,6 +347,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.63529414, 0.7607843, 0.7137255, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0.7137255, 1)
 theme_override_colors/font_outline_color = Color(0.19607843, 0.011764706, 0.24313726, 1)
+theme_override_fonts/font = ExtResource("6_y88q5")
 theme_override_font_sizes/font_size = 32
 text = "ЗАДАЧИ В ПРОЦЕССЕ"
 horizontal_alignment = 1
@@ -254,7 +383,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.6371719, 0.7600618, 0.7125585, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0.7137255, 1)
 theme_override_colors/font_outline_color = Color(0.19601801, 0.011349183, 0.24276558, 1)
-theme_override_fonts/font = ExtResource("2_74t8q")
+theme_override_fonts/font = ExtResource("6_y88q5")
 theme_override_font_sizes/font_size = 32
 text = "ПОСЛЕДНИЕ ПРОКАЧЕННЫЕ НАВЫКИ:"
 horizontal_alignment = 1
@@ -281,6 +410,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="SkillWindow" type="Panel" parent="." unique_id=244682461]
+visible = false
 modulate = Color(0.8866525, 0.92866164, 0.9794608, 0.99607843)
 top_level = true
 light_mask = 15
@@ -295,7 +425,7 @@ anchor_bottom = 0.683
 offset_left = -10.880005
 offset_top = 46.759995
 offset_right = -10.920044
-offset_bottom = 76.359985
+offset_bottom = 68.359985
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_gde30")
@@ -475,3 +605,150 @@ theme_override_constants/shadow_outline_size = 13
 theme_override_fonts/font = ExtResource("5_gde30")
 theme_override_font_sizes/font_size = 26
 horizontal_alignment = 1
+
+[node name="AddSkillWindow" type="PanelContainer" parent="." unique_id=1523754460]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -317.0
+offset_top = -292.0
+offset_right = 329.0
+offset_bottom = 222.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_gde30")
+theme_override_styles/panel = SubResource("StyleBoxFlat_y88q5")
+
+[node name="MarginContainer" type="MarginContainer" parent="AddSkillWindow" unique_id=1078818504]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 15
+
+[node name="FormCol" type="VBoxContainer" parent="AddSkillWindow/MarginContainer" unique_id=2042589227]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="FormHeader" type="Label" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=1624927092]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73661965, 0.8152477, 0.83785707, 1)
+theme_override_colors/font_shadow_color = Color(0.51299727, 0.62689406, 0.6550191, 0.4)
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/shadow_outline_size = 10
+theme_override_font_sizes/font_size = 29
+text = "Создание нового навыка"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=1986782490]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7019608, 0.78039217, 0.7882353, 1)
+theme_override_font_sizes/font_size = 20
+text = "Название:"
+
+[node name="NameInput" type="LineEdit" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=2063374522]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_od2vo")
+text = "Название навыка..."
+alignment = 1
+
+[node name="DescLabel" type="Label" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=399132899]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7017, 0.777808, 0.7877037, 1)
+theme_override_font_sizes/font_size = 20
+text = "Описание:"
+vertical_alignment = 1
+
+[node name="DescInput" type="LineEdit" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=1004940582]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_wu3h0")
+text = "Описание навыка..."
+alignment = 1
+
+[node name="PeriodLabel" type="Label" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=433203763]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6596493, 0.71392155, 0.74656343, 1)
+theme_override_font_sizes/font_size = 20
+text = "Периодичность:"
+
+[node name="PeriodBtn" type="OptionButton" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=1667161942]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_tj6r6")
+alignment = 1
+selected = 0
+item_count = 3
+popup/item_0/text = "Ежедневно"
+popup/item_0/id = 0
+popup/item_1/text = "Еженедельно"
+popup/item_1/id = 1
+popup/item_2/text = "Ежемесячно"
+popup/item_2/id = 2
+
+[node name="TypeLabel" type="Label" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=1391882196]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7019608, 0.78039217, 0.7882353, 1)
+theme_override_font_sizes/font_size = 20
+text = "Тип выполнения:"
+
+[node name="TypeBtn" type="OptionButton" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=1727542291]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_1gw14")
+alignment = 1
+selected = 1
+item_count = 2
+popup/item_0/text = "Вручную (счетчик прогресса)"
+popup/item_0/id = 0
+popup/item_1/text = "На время (таймер)"
+popup/item_1/id = 1
+
+[node name="HSeparator2" type="HSeparator" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=120055579]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="DurationRow" type="HBoxContainer" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=2015089713]
+layout_mode = 2
+
+[node name="DurationLabel" type="Label" parent="AddSkillWindow/MarginContainer/FormCol/DurationRow" unique_id=328693138]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.6392157, 0.7058824, 0.73333335, 1)
+theme_override_font_sizes/font_size = 20
+text = "Время (минут):   "
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DurationInput" type="LineEdit" parent="AddSkillWindow/MarginContainer/FormCol/DurationRow" unique_id=1747166182]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_5mqph")
+text = "Время для выполнения навыка..."
+alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=1597690101]
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+
+[node name="FormButtons" type="HBoxContainer" parent="AddSkillWindow/MarginContainer/FormCol" unique_id=641947344]
+layout_mode = 2
+alignment = 1
+
+[node name="CancelBtn" type="Button" parent="AddSkillWindow/MarginContainer/FormCol/FormButtons" unique_id=1232656025]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_604uq")
+text = " Отмена "
+
+[node name="SaveBtn" type="Button" parent="AddSkillWindow/MarginContainer/FormCol/FormButtons" unique_id=526522287]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_ac1wr")
+text = "Сохранить"

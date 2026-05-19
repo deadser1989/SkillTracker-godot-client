@@ -1,14 +1,11 @@
 [gd_scene format=3 uid="uid://byivn2gp28ggc"]
 
 [ext_resource type="Texture2D" uid="uid://3wad7okfqyol" path="res://assets/icons/skill-node-2.png" id="1_d5pho"]
-[ext_resource type="Texture2D" uid="uid://b0wgrofdc0t6a" path="res://assets/icons/book_skill_tree.png" id="2_umjrc"]
-[ext_resource type="Texture2D" uid="uid://b0u2fb0mmntes" path="res://assets/icons/inkognito_book_skill_tree.png" id="3_solu8"]
 [ext_resource type="Texture2D" uid="uid://brl2jlci8lwwd" path="res://assets/icons/svet.png" id="4_03hai"]
 [ext_resource type="Texture2D" uid="uid://ddpm6gghrbr0q" path="res://assets/icons/mini-star.png" id="5_kma2x"]
 
 [node name="SkillNode" type="SkillNode" unique_id=1994994398]
 tex_border = ExtResource("1_d5pho")
-icon_read_on = ExtResource("2_umjrc")
-icon_read_off = ExtResource("3_solu8")
 tex_flash = ExtResource("4_03hai")
 tex_star = ExtResource("5_kma2x")
+visible = false

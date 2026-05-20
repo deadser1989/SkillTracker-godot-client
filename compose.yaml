@@ -42,8 +42,14 @@ services:
       - DB_PASSWORD_FILE=/run/secrets/db_password
       - DB_HOST=db
       - DB_PORT=5432
+      - STRAVA_CLIENT_SECRET=/run/secrets/client_secret
+      - STRAVA_CLIENT_ID=/run/secrets/client_id
+      - FERNET_KEY=/run/secrets/fernet_key
     secrets:
       - db_password
+      - client_secret
+      - client_id
+      - fernet_key
     depends_on:
       db:
         condition: service_healthy
@@ -58,7 +64,13 @@ services:
 
 secrets:
   db_password:
-    file: ./app/db/password.txt
+    file: ./app/secrets/password.txt
+  client_secret:
+    file: ./app/secrets/client-secret.txt
+  client_id:
+    file: ./app/secrets/client-id.txt
+  fernet_key:
+    file: ./app/secrets/fernet-key.txt
 
 volumes:
   db_data:

@@ -25,5 +25,7 @@ urlpatterns = [
     path('tree/', include('skilltree.urls')),
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
-    path('catalog/', catalog_view, name='catalog')
+    path('catalog/', catalog_view, name='catalog'),
+    
+    path('integrations/', include('integrations.urls')),
 ]

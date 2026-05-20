@@ -1,5 +1,5 @@
 app/venv/*
-app/db/password.txt
+app/secrets/*
 .vscode/*
 game/.godot/
 *.dylib
@@ -10,3 +10,4 @@ game/.godot/
 *.os
 .vscode/
 .DS_Store
+__pycache__

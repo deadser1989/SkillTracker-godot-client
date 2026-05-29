@@ -4,11 +4,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from .models import Tree, Node, ActionLog
 from .serializers import TreeSerializer, NodeSerializer, RegistrySerializer
-from .services import registry_service, login_service, action_service
+from .services import registry_service, login_service, action_service, add_node_service, activate_node_service
+
 import os
 import json
 from django.conf import settings
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_node_view(request):
+    return add_node_service(request.user, request.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -46,7 +51,7 @@ def history_view(request):
     res = []
     for log in logs:
         res.append({
-            "date": log.date.strftime("%Y-%m-%d"),
+            "date": log.submitted_at.strftime("%Y-%m-%d"),
             "skill_id": log.node_id,
             "node_name": log.node.node_name,
             "progress_added": log.progress_added
@@ -82,3 +87,8 @@ except Exception as ex:
 @permission_classes([IsAuthenticated])
 def catalog_view(request):
     return Response( CATALOG_DATA, status=status.HTTP_200_OK )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def activate_node_view(request):
+    return activate_node_service(request.user, request.data)

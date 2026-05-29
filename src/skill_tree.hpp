@@ -30,6 +30,8 @@ public:
     
     void registerNode(SkillNode* node);
     
+    void clear_nodes();
+    
     void place_node_on_map(SkillNode* new_node, SkillNode* parent_node, int child_index);
 private:
     Dictionary node_map;                            // id->skillnode*

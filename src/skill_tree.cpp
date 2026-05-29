@@ -6,20 +6,22 @@ using namespace godot;
 
 void SkillTree::_bind_methods() {
     ClassDB::bind_method(D_METHOD("reveal_successors", "skill_node"), &SkillTree::reveal_successors);
-    
     ClassDB::bind_method(D_METHOD("registerNode", "node"), &SkillTree::registerNode);
+    ClassDB::bind_method(D_METHOD("clear_nodes"), &SkillTree::clear_nodes); 
     ClassDB::bind_method(D_METHOD("find_skill_node", "id"), &SkillTree::find_skill_node);
-    
     ClassDB::bind_method(D_METHOD("place_node_on_map", "new_node", "parent_node", "child_index"), &SkillTree::place_node_on_map);
 }
-
-
 
 SkillTree::SkillTree() { 
     set_z_index(-1);
 }
 
 SkillTree::~SkillTree() {}
+
+void SkillTree::clear_nodes() {
+    node_map.clear();
+    nodes_by_area_and_depth.clear(); 
+}
 
 SkillNode* SkillTree::find_skill_node(const String& id) {
     if (!node_map.has(id)) return nullptr;
@@ -47,7 +49,6 @@ void SkillTree::_draw() {
                 PackedColorArray inner_colors;
                 inner_colors.append(c_parent);
                 inner_colors.append(c_child);
-
 
                 PackedColorArray outline_colors;
                 outline_colors.append(c_parent.darkened(0.7f));
@@ -100,58 +101,8 @@ void SkillTree::_process(double delta) {
 void SkillTree::registerNode(SkillNode* node) {
     String id = node->getSkillId();
 
-    if (node_map.has(id)) {
-        UtilityFunctions::print("Duplicate skill id: ", id);
-        return;
-    }
-
     node_map[id] = node;
 }
-
-
-
-// void SkillTree::place_node_on_map(SkillNode* new_node, SkillNode* parent_node, int child_index) {
-//     if (!parent_node ) {
-//         return;
-//     }
-
-//     int area = new_node->getSubjectArea();
-
-//     Vector2 dir_vector;             //направление роста ветка
-//     Vector2 side_dir;               //перпендикуляр для раздвижения навыков
-
-//     if (area == SkillNode::AREA_READING) {
-//         dir_vector = Vector2(0, -1); // ВВЕРХ
-//         side_dir = Vector2(1, 0);    // Раздвигаем по горизонтали
-//     } else if (area == SkillNode::AREA_FITNESS) {
-//         dir_vector = Vector2(1, 0);  // ВПРАВО
-//         side_dir = Vector2(0, 1);    // Раздвигаем по вертикали
-//     } else if (area == SkillNode::AREA_LANGUAGE) {
-//         dir_vector = Vector2(0, 1);  // ВНИЗ
-//         side_dir = Vector2(1, 0);    // Раздвигаем по горизонтали
-//     } else { // AREA_CREATIVITY
-//         dir_vector = Vector2(-1, 0); // ВЛЕВО
-//         side_dir = Vector2(0, 1);    // Раздвигаем по вертикали
-//     }
-
-//     float forward_distance = 150.0f;
-//     float side_spread = 75.0f;
-
-//     Vector2 base_pos = parent_node->get_position() + (dir_vector * forward_distance);
-
-//     if (child_index == 0) {
-//         base_pos += side_dir * side_spread;
-//     } else {
-//         base_pos -= side_dir * side_spread;
-//     }
-
-//     new_node->set_position(base_pos);
-
-//       if (!new_node->is_inside_tree()) {
-//         add_child(new_node);
-//     }
-// }
-
 
 void SkillTree::place_node_on_map(SkillNode* new_node, SkillNode* parent_node, int child_index) {
     if (!parent_node) {
@@ -207,7 +158,6 @@ void SkillTree::place_node_on_map(SkillNode* new_node, SkillNode* parent_node, i
     queue_redraw();
 }
 
-/////////______________________________________
 int SkillTree::compute_depth(SkillNode* node) {
     int depth = 1;
     SkillNode* current = node;

@@ -76,9 +76,9 @@ func _ready():
 
 func _process(_delta):
 	if skill_window.visible and selected_skill != null:
-		if selected_skill.is_timer_active():
-			upgrade_btn.get_node("Label").text = "Завершить досрочно [" + format_time(selected_skill.get_current_timer_sec()) + "]"
-
+		if selected_skill.get_task_type() == 1 and selected_skill.has_method("is_timer_active") and selected_skill.is_timer_active():
+			upgrade_btn.get_node("Label").text = "Завершить " + format_time(selected_skill.get_current_timer_sec())
+			
 func format_time(seconds: float) -> String:
 	var m = int(seconds / 60.0)
 	var s = int(seconds) % 60
@@ -157,52 +157,18 @@ func _on_save_form_pressed():
 	if period_btn.selected == 1: cd_str = "W"
 	elif period_btn.selected == 2: cd_str = "M"
 	
-	var duration = null
+	var target_val = 1
+	var is_timer = false
+	
 	if type_btn.selected == 1:
 		var mins = max(1, int(duration_input.text))
-		duration = mins * 60
-
-	var payload = {
-		"node_name": s_name,
-		"node_info": desc_input.text.strip_edges(),
-		"cooldown": cd_str,
-		"duration_sec": duration,
-		"area": 4, 
-		"node_type": "A"
-	}
+		target_val = mins * 60
+		is_timer = true
 	
-	Net._send_request("/tree/", HTTPClient.METHOD_POST, payload, func(code, body):
-		if code == 201 or code == 200:
-			var response_dict = JSON.parse_string(body.get_string_from_utf8())
-			if response_dict:
-				var custom_node = SkillNode.new()
-				custom_node.set_skill_id(str(response_dict.get("id", "")))
-				custom_node.set_skill_name(response_dict.get("node_name", s_name))
-				custom_node.set_skill_title(response_dict.get("node_info", ""))
-				
-				if cd_str == "D": custom_node.set_cooldown_type(1)
-				elif cd_str == "W": custom_node.set_cooldown_type(2)
-				elif cd_str == "M": custom_node.set_cooldown_type(3)
-				
-				if duration != null:
-					custom_node.set_task_type(1)
-					custom_node.set_skill_time(duration)
-				else:
-					custom_node.set_task_type(0)
-					custom_node.set_skill_time(-1)
-					
-				custom_node.set_skill_subject_area(4)
-				custom_node.set_skill_level(1)
-				custom_node.set_base_progress(int(response_dict.get("target_progress", 1)))
-				custom_node.refresh_target_by_level()
-				custom_node.set_skill_state(2)
-				
-				GM.add_obligation(custom_node)
-				setup_filters()
-				populate_active_tasks()
-	)
+	if Net.has_method("create_custom_skill"):
+		Net.create_custom_skill(s_name, desc_input.text.strip_edges(), cd_str, target_val, is_timer)
 	add_skill_window.hide()
-
+	
 func fetch_history_from_server():
 	Net._send_request("/tree/history/", HTTPClient.METHOD_GET, {}, func(code, body):
 		if code == 200:
@@ -224,6 +190,8 @@ func aggregate_data():
 	bar_current.clear()
 	
 	var days_count = 7 if current_time_mode == 0 else 31
+	var now = Time.get_unix_time_from_system()
+	
 	for i in range(days_count):
 		line_reading.append(0)
 		line_fitness.append(0)
@@ -232,14 +200,17 @@ func aggregate_data():
 		bar_target.append(0)
 		bar_current.append(0)
 		
+		var day_unix = now - (days_count - 1 - i) * 86400
+		var dict = Time.get_date_dict_from_unix_time(day_unix)
+		
 		if current_time_mode == 0:
-			var d_names = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-			graph_labels.append(d_names[i])
+			var d_names = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
+			graph_labels.append(d_names[dict.weekday])
 		else:
-			if (i + 1) == 1 or (i + 1) % 5 == 0 or (i + 1) == 31: graph_labels.append(str(i + 1))
+			if i == days_count - 1: graph_labels.append(str(dict.day))
+			elif (days_count - 1 - i) % 5 == 0: graph_labels.append(str(dict.day))
 			else: graph_labels.append("")
 
-	var now = Time.get_unix_time_from_system()
 	for entry in server_history_data:
 		var date_str = entry.get("date", "")
 		if date_str == "": continue
@@ -261,10 +232,20 @@ func aggregate_data():
 					if str(t["id"]) == s_id:
 						node_area = int(t.get("area", -1))
 						break
+				
+				if node_area == -1:
+					var n_str = entry.get("node_name", "").to_lower()
+					if "чтени" in n_str or "книг" in n_str or "литератур" in n_str: node_area = 0
+					elif "спорт" in n_str or "йога" in n_str or "трениров" in n_str or "отжиман" in n_str or "планк" in n_str: node_area = 1
+					elif "язык" in n_str or "слов" in n_str or "english" in n_str: node_area = 2
+					elif "творчеств" in n_str or "фото" in n_str or "каллиграф" in n_str or "рисун" in n_str: node_area = 3
+					else: node_area = 0 
+
 				if node_area == 0: line_reading[idx] += prog
 				elif node_area == 1: line_fitness[idx] += prog
 				elif node_area == 2: line_language[idx] += prog
 				elif node_area == 3: line_creative[idx] += prog
+				
 			else:
 				if s_id == selected_skill_id: bar_current[idx] += prog
 
@@ -275,7 +256,7 @@ func aggregate_data():
 				current_target = int(t.get("target", 10))
 				break
 		for i in range(days_count): bar_target[i] = current_target
-
+		
 func _on_graph_draw():
 	if draw_area.size.x == 0 or draw_area.size.y == 0: return 
 	var pad_left = 60.0  
@@ -463,12 +444,16 @@ func recreate_and_open_skill(task_id):
 	
 	selected_skill.set_cooldown_type(cd_type)
 	selected_skill.set_task_type(t_type)
+	
+	if t_type == 1: t_time = t_target
+	
 	selected_skill.set_skill_time(t_time)
 	selected_skill.set_skill_state(2) 
 	
 	open_skill_window(selected_skill)
 	
 func open_skill_window(node):
+	selected_skill = node
 	title_label.text = node.get_skill_name()
 	desc_label.text = node.get_skill_title()
 	prog_row.hide()
@@ -490,7 +475,9 @@ func open_skill_window(node):
 	var state = node.get_skill_state()
 	if state == 2: 
 		if node.get_task_type() == 1: 
-			extra_info.text = period_text + "\nНа время: " + str(node.get_skill_time() / 60) + " мин."
+			var t_time = node.get_skill_time()
+			if t_time <= 0: t_time = node.get_skill_nes_prog()
+			extra_info.text = period_text + "\nНа время: " + str(int(t_time / 60.0)) + " мин."
 			if node.has_method("is_timer_active") and node.is_timer_active(): 
 				upgrade_btn.get_node("Label").text = "Завершить " + format_time(node.get_current_timer_sec())
 			else: 
@@ -515,7 +502,7 @@ func open_skill_window(node):
 		upgrade_btn.disabled = false
 		
 	skill_window.show()
-
+	
 func _on_close_btn_pressed():
 	skill_window.hide()
 	selected_skill = null
@@ -532,10 +519,13 @@ func _on_upgrade_btn_pressed():
 		if selected_skill.is_timer_active():
 			if selected_skill.has_method("force_finish_timer"):
 				selected_skill.force_finish_timer() 
-			add_amount = 1 
+			add_amount = selected_skill.get_skill_nes_prog() - selected_skill.get_skill_cur_prog()
+			if add_amount <= 0: add_amount = 1
 		else:
 			selected_skill.start_progress_time() 
-		GM.add_obligation(selected_skill) 
+			GM.add_obligation(selected_skill) 
+			open_skill_window(selected_skill)
+			return
 	else: 
 		add_amount = 1
 		if prog_row.visible:
@@ -550,7 +540,7 @@ func _on_upgrade_btn_pressed():
 		recreate_and_open_skill(raw_id)
 	else:
 		open_skill_window(selected_skill)
-
+		
 func _on_lvl_up_btn_pressed():
 	if selected_skill == null: return
 	var lvl = selected_skill.get_skill_level()

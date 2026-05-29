@@ -1,6 +1,6 @@
 import os 
 import requests
-from models import UserStravaIntegration
+from .models import UserStravaIntegration
 from datetime import datetime
 
 

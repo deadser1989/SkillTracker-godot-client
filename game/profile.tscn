@@ -119,6 +119,57 @@ corner_detail = 12
 shadow_color = Color(0.8352941, 0.52156866, 0.8117647, 0.13725491)
 shadow_size = 50
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r2xaa"]
+bg_color = Color(0.33333334, 0.6117647, 0.92941177, 0.16470589)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.8117647, 0.70980394, 0.9411765, 0.88235295)
+corner_radius_top_left = 60
+corner_radius_top_right = 60
+corner_radius_bottom_right = 60
+corner_radius_bottom_left = 60
+corner_detail = 20
+shadow_color = Color(0.8352941, 0.52156866, 0.8117647, 0.13725491)
+shadow_size = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_klohp"]
+bg_color = Color(0.5294118, 0.47843137, 0.76862746, 0.5372549)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.75686276, 0.6509804, 0.8901961, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o3lyu"]
+bg_color = Color(0.34067005, 0.28890857, 0.54557115, 0.5372549)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.75686276, 0.6509804, 0.8901961, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6aff7"]
+bg_color = Color(0.2681552, 0.1810036, 0.43080807, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.75686276, 0.6509804, 0.8901961, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
 [node name="ProfileScreen" type="Control" unique_id=1072860945]
 layout_mode = 3
 anchors_preset = 15
@@ -150,11 +201,13 @@ theme_override_constants/margin_bottom = 50
 
 [node name="MainSplit" type="HBoxContainer" parent="MarginContainer" unique_id=740514900]
 layout_mode = 2
+size_flags_stretch_ratio = 0.7
 theme_override_constants/separation = 40
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/MainSplit" unique_id=552001852]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.1
 theme_override_constants/separation = 40
 
 [node name="PlayerCard" type="PanelContainer" parent="MarginContainer/MainSplit/VBoxContainer" unique_id=1796788913]
@@ -371,24 +424,31 @@ text = "Лучший навык: чтение
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="AchievCard" type="PanelContainer" parent="MarginContainer/MainSplit" unique_id=573379638]
+[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/MainSplit" unique_id=163063631]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.8
+size_flags_stretch_ratio = 0.74
+theme_override_constants/separation = 40
+
+[node name="AchievCard" type="PanelContainer" parent="MarginContainer/MainSplit/VBoxContainer2" unique_id=573379638]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.61
 theme_override_styles/panel = SubResource("StyleBoxFlat_khxjx")
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/MainSplit/AchievCard" unique_id=2048006888]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/MainSplit/VBoxContainer2/AchievCard" unique_id=2048006888]
 layout_mode = 2
 theme_override_constants/margin_left = 35
 theme_override_constants/margin_top = 25
 theme_override_constants/margin_right = 35
 theme_override_constants/margin_bottom = 35
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/MainSplit/AchievCard/MarginContainer" unique_id=820844166]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/MainSplit/VBoxContainer2/AchievCard/MarginContainer" unique_id=820844166]
 layout_mode = 2
 theme_override_constants/separation = 40
 
-[node name="Label" type="Label" parent="MarginContainer/MainSplit/AchievCard/MarginContainer/VBoxContainer" unique_id=2033420153]
+[node name="Label" type="Label" parent="MarginContainer/MainSplit/VBoxContainer2/AchievCard/MarginContainer/VBoxContainer" unique_id=2033420153]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9625202, 0.82459027, 0.9792419, 1)
 theme_override_colors/font_shadow_color = Color(0.21960784, 0.16862746, 0.4117647, 0.6784314)
@@ -402,12 +462,61 @@ theme_override_font_sizes/font_size = 40
 text = "МОИ ДОСТИЖЕНИЯ"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/MainSplit/AchievCard/MarginContainer/VBoxContainer" unique_id=128387267]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/MainSplit/VBoxContainer2/AchievCard/MarginContainer/VBoxContainer" unique_id=128387267]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="AchievGrid" type="GridContainer" parent="MarginContainer/MainSplit/AchievCard/MarginContainer/VBoxContainer/ScrollContainer" unique_id=1122920336]
+[node name="AchievGrid" type="GridContainer" parent="MarginContainer/MainSplit/VBoxContainer2/AchievCard/MarginContainer/VBoxContainer/ScrollContainer" unique_id=1122920336]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 2
+
+[node name="StravaCard" type="PanelContainer" parent="MarginContainer/MainSplit/VBoxContainer2" unique_id=662912477]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_r2xaa")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/MainSplit/VBoxContainer2/StravaCard" unique_id=823191146]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer" unique_id=1251125150]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ConnectBtn" type="Button" parent="MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer" unique_id=1979826925]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_r2xaa")
+theme_override_styles/normal = SubResource("StyleBoxFlat_klohp")
+text = "Подключить Strava"
+
+[node name="CodeInput" type="LineEdit" parent="MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer" unique_id=721159094]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_r2xaa")
+theme_override_styles/normal = SubResource("StyleBoxFlat_o3lyu")
+text = "Вставьте код сюда..."
+alignment = 1
+
+[node name="SubmitBtn" type="Button" parent="MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer" unique_id=2095849677]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_r2xaa")
+theme_override_styles/normal = SubResource("StyleBoxFlat_6aff7")
+text = "Отправить код"
+
+[node name="LatestActivityLabel" type="Label" parent="MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer" unique_id=1954401090]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("4_r2xaa")
+theme_override_font_sizes/font_size = 20
+text = "Тренировок пока нет"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

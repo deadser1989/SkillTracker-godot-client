@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'skill',
     'skilltree',
-    'corsheaders'
+    'corsheaders',
+    'integrations',
 ]
 
 MIDDLEWARE = [

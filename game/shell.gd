@@ -11,6 +11,7 @@ var scene_tree = preload("res://main.tscn")
 var scene_profile = preload("res://profile.tscn")
 
 var current_scene_node = null
+var cached_scenes = {} 
 
 func _ready():
 	btn_stats.pressed.connect(func(): load_tab(scene_stats, btn_stats))
@@ -27,15 +28,29 @@ func load_tab(scene_resource, active_btn):
 	
 	active_btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	
+	get_viewport().canvas_transform = Transform2D()
+	
 	if current_scene_node != null:
-		current_scene_node.queue_free()
+		current_scene_node.hide() 
 		
-	current_scene_node = scene_resource.instantiate()
-	content_container.add_child(current_scene_node)
+	if not cached_scenes.has(scene_resource):
+		var inst = scene_resource.instantiate()
+		content_container.add_child(inst)
+		if inst is Control:
+			inst.set_anchors_preset(Control.PRESET_FULL_RECT)
+			inst.offset_left = 0
+			inst.offset_top = 0
+			inst.offset_right = 0
+			inst.offset_bottom = 0
+		cached_scenes[scene_resource] = inst
 
-	if current_scene_node is Control:
-		current_scene_node.set_anchors_preset(Control.PRESET_FULL_RECT)
-		current_scene_node.offset_left = 0
-		current_scene_node.offset_top = 0
-		current_scene_node.offset_right = 0
-		current_scene_node.offset_bottom = 0
+	current_scene_node = cached_scenes[scene_resource]
+	current_scene_node.show()
+	
+	if current_scene_node.name == "Stats" or current_scene_node.name == "StatsPanel":
+		Net.fetch_history()
+
+	if current_scene_node.has_method("fetch_history_from_server"):
+		current_scene_node.fetch_history_from_server()
+	if current_scene_node.has_method("update_ui"):
+		current_scene_node.update_ui()

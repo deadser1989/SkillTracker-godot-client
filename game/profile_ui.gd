@@ -3,25 +3,28 @@ extends Control
 @onready var top_bar = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/TopBar
 @onready var settings_btn = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/TopBar/Control3/SettingsBtn
 @onready var avatar_btn = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/TopBar/Avatar
-
 @onready var nick_label = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/Nickname
 @onready var nick_edit = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/NickEdit
 @onready var status_label = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/Status
-
 @onready var lvl_label = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/LvlLabel
 @onready var xp_bar = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/XPBar
 @onready var xp_text = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/XPText
-
 @onready var logout_btn = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/LogoutBtn
 @onready var save_btn = $MarginContainer/MainSplit/VBoxContainer/PlayerCard/MarginContainer/VBoxContainer/SaveBtn
-
 @onready var streak_label = $MarginContainer/MainSplit/VBoxContainer/SummaryCard/MarginContainer/VBoxContainer/StreakLb
 @onready var sum_tasks_label = $MarginContainer/MainSplit/VBoxContainer/SummaryCard/MarginContainer/VBoxContainer/SumTasksLb
 @onready var dom_area_label = $MarginContainer/MainSplit/VBoxContainer/SummaryCard/MarginContainer/VBoxContainer/Label2
-@onready var achiev_grid = $MarginContainer/MainSplit/AchievCard/MarginContainer/VBoxContainer/ScrollContainer/AchievGrid
+@onready var achiev_grid = $MarginContainer/MainSplit/VBoxContainer2/AchievCard/MarginContainer/VBoxContainer/ScrollContainer/AchievGrid
 
+@onready var strava_connect_btn = $MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer/ConnectBtn
+@onready var strava_code_input = $MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer/CodeInput
+@onready var strava_submit_btn = $MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer/SubmitBtn
+@onready var latest_activity_label = $MarginContainer/MainSplit/VBoxContainer2/StravaCard/MarginContainer/VBoxContainer/LatestActivityLabel
+
+var STRAVA_CLIENT_ID = "248141" 
 var is_editing = false
 var file_dialog: FileDialog
+var current_avatar_id = 0
 
 var avatar_list = [
 	preload("res://assets/bg/avatar2.png"),
@@ -29,7 +32,6 @@ var avatar_list = [
 	preload("res://assets/bg/p1.png"),
 	preload("res://assets/bg/p2.png")
 ]
-var current_avatar_id = 0
 
 func _ready():
 	Profile.profile_updated.connect(update_ui)
@@ -38,6 +40,12 @@ func _ready():
 	settings_btn.pressed.connect(toggle_edit_mode)
 	save_btn.pressed.connect(save_profile)
 	avatar_btn.pressed.connect(_on_avatar_clicked)
+	
+	strava_connect_btn.pressed.connect(_on_strava_connect_pressed)
+	strava_submit_btn.pressed.connect(_on_strava_submit_pressed)
+	Net.strava_connected_success.connect(_on_strava_success)
+	Net.strava_connected_error.connect(_on_strava_error)
+	Net.strava_activities_loaded.connect(_on_strava_data_parsed)
 	
 	nick_edit.hide()
 	save_btn.hide()
@@ -52,6 +60,17 @@ func _ready():
 	
 	Net.fetch_history()
 	Net.fetch_user_tree()
+	Net.fetch_strava_activities()
+	
+	if OS.has_feature("web"):
+		var js_search = JavaScriptBridge.eval("window.location.search")
+		if js_search and typeof(js_search) == TYPE_STRING and "code=" in js_search:
+			var parts = js_search.split("code=")
+			if parts.size() > 1:
+				var auto_code = parts[1].split("&")[0]
+				Net.send_strava_code(auto_code)
+				# Очищаем URL, чтобы при обновлении страницы (F5) код не отправлялся повторно
+				JavaScriptBridge.eval("window.history.replaceState({}, document.title, window.location.pathname);")
 
 func _setup_file_dialog():
 	file_dialog = FileDialog.new()
@@ -104,10 +123,8 @@ func _on_avatar_file_selected(path: String):
 		if error == OK:
 			current_avatar_id = -1
 			_load_custom_avatar()
-		else:
-			print("ошибка")
 	else:
-		print("ее удалось загрузить файл")
+		pass
 		
 func _on_server_history_loaded(history_array: Array):
 	populate_summary(history_array)
@@ -190,7 +207,7 @@ func save_profile():
 	settings_btn.modulate = Color(1.0, 1.0, 1.0)
 
 func populate_achievements(history: Array):
-	for child in achiev_grid.get_children(): 
+	for child in achiev_grid.get_children():
 		child.queue_free()
 	
 	if not FileAccess.file_exists("res://achievements.json"):
@@ -258,7 +275,7 @@ func populate_achievements(history: Array):
 
 func create_achiev_card(a_name: String, a_desc: String, is_unlocked: bool):
 	var card = PanelContainer.new()
-	card.custom_minimum_size = Vector2(250, 120) 
+	card.custom_minimum_size = Vector2(250, 120)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
 	var sb = StyleBoxFlat.new()
@@ -266,9 +283,9 @@ func create_achiev_card(a_name: String, a_desc: String, is_unlocked: bool):
 	sb.corner_radius_bottom_left = 15; sb.corner_radius_bottom_right = 15
 	
 	if is_unlocked:
-		sb.bg_color = Color(0.25, 0.15, 0.4, 0.85) 
+		sb.bg_color = Color(0.25, 0.15, 0.4, 0.85)
 		sb.border_width_left = 2; sb.border_width_right = 2; sb.border_width_top = 2; sb.border_width_bottom = 2
-		sb.border_color = Color(0.6, 0.3, 0.9, 0.6) 
+		sb.border_color = Color(0.6, 0.3, 0.9, 0.6)
 	else:
 		sb.bg_color = Color(0.1, 0.1, 0.12, 0.8)
 		sb.border_width_left = 1; sb.border_width_right = 1; sb.border_width_top = 1; sb.border_width_bottom = 1
@@ -291,11 +308,11 @@ func create_achiev_card(a_name: String, a_desc: String, is_unlocked: bool):
 	if is_unlocked:
 		title.text = a_name
 	else:
-		title.text =  a_name
+		title.text = a_name
 		
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 18) 
-	if not is_unlocked: 
+	title.add_theme_font_size_override("font_size", 18)
+	if not is_unlocked:
 		title.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
 	vbox.add_child(title)
 	
@@ -303,13 +320,74 @@ func create_achiev_card(a_name: String, a_desc: String, is_unlocked: bool):
 	desc.text = a_desc
 	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD
-	desc.add_theme_font_size_override("font_size", 13) 
+	desc.add_theme_font_size_override("font_size", 13)
 	desc.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0) if is_unlocked else Color(0.3, 0.3, 0.33))
 	vbox.add_child(desc)
 	
 	achiev_grid.add_child(card)
 
 func _on_logout():
-	Profile.set_player_name("") 
+	Profile.set_player_name("")
 	Profile.set_meta("auth_token", "")
 	get_tree().change_scene_to_file("res://login.tscn")
+
+func _on_strava_connect_pressed():
+	var client_id = get_docker_secret()
+	if client_id != "":
+		var query_param = "client_id=" + client_id.uri_encode()
+		var auth_url = "https://www.strava.com/oauth/authorize?" + query_param + "&response_type=code&redirect_uri=http://localhost:3000/strava-callback&approval_prompt=auto&scope=activity:read_all"
+		
+		OS.shell_open(auth_url)
+		latest_activity_label.text = "Вставьте ссылку из адресной строки ниже:"
+	else:
+		latest_activity_label.text = "Ошибка чтения Client ID"
+
+func _on_strava_submit_pressed():
+	var input_text = strava_code_input.text.strip_edges()
+	if input_text == "": return
+	
+	var final_code = input_text
+	
+	if "code=" in input_text:
+		var parts = input_text.split("code=")
+		if parts.size() > 1:
+			final_code = parts[1].split("&")[0]
+	strava_submit_btn.text = "Подключение..."
+	Net.send_strava_code(final_code)
+
+func _on_strava_success():
+	strava_submit_btn.text = "Подключено!"
+	strava_code_input.hide()
+	strava_submit_btn.hide()
+	strava_connect_btn.hide()
+
+func _on_strava_error():
+	strava_submit_btn.text = "Ошибка! Пробуй снова"
+
+func _on_strava_data_parsed(activities: Array):
+	if activities.size() > 0:
+		strava_code_input.hide()
+		strava_submit_btn.hide()
+		strava_connect_btn.hide()
+		
+		var latest = activities[0]
+		var a_name = latest.get("name", "Неизвестная активность")
+		var a_type = latest.get("type", "Активность")
+		var dist = str(latest.get("distance_km", 0.0)) + " км"
+		var dur = str(latest.get("duration_minutes", 0.0)) + " мин"
+		
+		latest_activity_label.text = "[Последняя тренировка]\n" + a_name + " (" + a_type + ")\nДистанция: " + dist + "\nВремя: " + dur
+	else:
+		latest_activity_label.text = "Тренировок пока нет."
+		
+		
+func get_docker_secret() -> String:
+	var secret_path = "/run/secrets/client-id"
+	if FileAccess.file_exists(secret_path):
+		var file = FileAccess.open(secret_path, FileAccess.READ)
+		var secret = file.get_as_text()
+		file.close()
+		return secret.strip_edges()
+		
+	print("Ошибка: Секрет не найден по пути ", secret_path)
+	return "248141"

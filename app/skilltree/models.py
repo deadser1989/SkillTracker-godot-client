@@ -15,7 +15,7 @@ class Profile( models.Model ):
     level  = models.BigIntegerField( default=1 )
     streak = models.BigIntegerField( default=0 )
     
-    avatar_path = models.CharField() # ? maybe delete later
+    avatar_path = models.CharField(max_length=255, blank=True, null=True)
     
     
 class Tree( models.Model ):
@@ -143,9 +143,4 @@ class Node( models.Model ):
         blank=False,
         null=False
         )
-    
-    def save( self, *args, **kwargs ):
-        if ( self.expires_at and timezone.now() >= self.expires_at ):
-            self.node_state = self.STATE_FINISHED
-            
-        super().save(*args, **kwargs)
+        

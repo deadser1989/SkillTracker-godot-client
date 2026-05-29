@@ -42,11 +42,11 @@ func _on_login_pressed():
 
 	if is_register_mode:
 		if nick != "" and email != "" and pwd != "":
-			_send_auth("http://127.0.0.1:8000/register/", {"username": nick, "email": email, "password": pwd})
+			_send_auth("http://localhost:8000/register/", {"username": nick, "email": email, "password": pwd})#_send_auth("http://127.0.0.1:8000/register/", {"username": nick, "email": email, "password": pwd})
 		else: _shake_error()
 	else:
 		if nick != "" and pwd != "":
-			_send_auth("http://127.0.0.1:8000/login/", {"username": nick, "password": pwd})
+			_send_auth("http://localhost:8000/login/", {"username": nick, "password": pwd})#_send_auth("http://127.0.0.1:8000/login/", {"username": nick, "password": pwd})
 		else: _shake_error()
 
 func _send_auth(url, data):

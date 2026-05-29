@@ -1,15 +1,13 @@
 import http.server
 import socketserver
 
-PORT = 8080
-
-class Handler(http.server.SimpleHTTPRequestHandler):
+class CORSRequestHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
-        self.send_header("Access-Control-Allow-Origin", "*")
         super().end_headers()
 
-with socketserver.TCPServer(("", PORT), Handler) as httpd:
-    print(f"Сервер запущен на http://localhost:{PORT}")
+socketserver.TCPServer.allow_reuse_address = True
+with socketserver.TCPServer(("", 8080), CORSRequestHandler) as httpd:
+    print("Сервер запущен на http://localhost:8080")
     httpd.serve_forever()

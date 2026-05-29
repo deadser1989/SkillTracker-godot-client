@@ -1,6 +1,6 @@
 extends Node
 
-var BASE_URL = "http://127.0.0.1:8000" 
+var BASE_URL = "http://localhost:8000"  #var BASE_URL = "http://127.0.0.1:8000" 
 var auth_token = ""
 
 signal auth_success
@@ -11,7 +11,6 @@ signal history_loaded(history_array)
 signal action_updated(response_dict)
 signal node_activated(response_dict) 
 
-# ВОССТАНОВЛЕНЫ СИГНАЛЫ ДЛЯ ПРОФИЛЯ
 signal strava_connected_success
 signal strava_connected_error
 signal strava_activities_loaded(activities)

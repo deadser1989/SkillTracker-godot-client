@@ -67,28 +67,60 @@ func update_energy_hud():
 		cooldown_text.text = format_time(GM.get_cooldown_time_left())
 
 func _on_server_tree_downloaded(parsed_json_string: String):
-	var data = JSON.parse_string(parsed_json_string)
-	if typeof(data) == TYPE_ARRAY:
-		for item in data:
-			if item.has("nodes"): 
-				for n in item["nodes"]: _fix_cpp_types(n)
-			else: 
-				_fix_cpp_types(item)
-	var safe_json = JSON.stringify(data)
-
 	if tree.has_method("clear_nodes"): tree.clear_nodes()
 	for child in tree.get_children():
 		if child.has_method("get_skill_state"):
 			tree.remove_child(child)
 			child.queue_free()
 
-	var parsed_nodes = GM.parse_user_tree(safe_json)
+	# === ЧИТАЕМ JSON НАПРЯМУЮ В GODOT, В ОБХОД БАГА C++ ===
+	var data = JSON.parse_string(parsed_json_string)
+	var parsed_nodes = []
+	
+	if typeof(data) == TYPE_ARRAY:
+		for tree_data in data:
+			var area = int(tree_data.get("area", 0))
+			if tree_data.has("nodes"):
+				for n in tree_data["nodes"]:
+					var new_node = SkillNode.new()
+					new_node.set_skill_id(str(n.get("id", "")))
+					new_node.set_skill_name(str(n.get("node_name", "Неизвестно")))
+					new_node.set_skill_title(str(n.get("node_info", "")))
+					
+					new_node.set_skill_state(int(n.get("node_state", 2)))
+					new_node.set_skill_level(int(n.get("node_level", 1)))
+					new_node.set_skill_rarity(int(n.get("node_rarity", 0)))
+					new_node.set_skill_xp(int(n.get("xp_reward", 10)))
+					
+					var target = int(n.get("target_progress", 1))
+					new_node.set_base_progress(target)
+					new_node.set_skill_cur_prog(int(n.get("current_progress", 0)))
+					new_node.set_skill_nes_prog(target)
+					new_node.set_skill_subject_area(area)
+					
+					var cd_str = str(n.get("cooldown", "D")).to_upper()
+					if cd_str == "D": new_node.set_cooldown_type(1)
+					elif cd_str == "W": new_node.set_cooldown_type(2)
+					elif cd_str == "M": new_node.set_cooldown_type(3)
+					
+					if target >= 60:
+						new_node.set_task_type(1)
+						new_node.set_skill_time(target)
+					else:
+						new_node.set_task_type(0)
+						
+					var p_id = n.get("parent")
+					if p_id != null:
+						var reqs = PackedStringArray()
+						reqs.append(str(p_id))
+						new_node.set_required_prev_skills(reqs)
+						
+					parsed_nodes.append(new_node)
+	# ======================================================
+
 	var node_dict = {}
 
 	for node in parsed_nodes:
-		if node.get_base_progress() >= 60:
-			node.set_task_type(1)
-			node.set_skill_time(node.get_base_progress())
 		var n_id = str(node.get_skill_id()).replace(".0", "").split("_")[0]
 		node_dict[n_id] = node
 		tree.add_child(node)
@@ -141,7 +173,17 @@ func _on_server_tree_downloaded(parsed_json_string: String):
 	
 	if tree.has_method("queue_redraw"): tree.queue_redraw()
 	refresh_todo_list()
-
+	
+	var actual_skills_count = 0
+	for child in tree.get_children():
+		if child.has_method("get_skill_state"): actual_skills_count += 1
+			
+	if actual_skills_count == 4:
+		for child in tree.get_children():
+			if child.has_method("get_skill_state") and child.get_skill_state() >= 2:
+				spawn_new_random_skill(0, child)
+				spawn_new_random_skill(1, child)
+				
 func _fix_cpp_types(n: Dictionary):
 	if n.has("node_state"):
 		var st = int(n["node_state"])

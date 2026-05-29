@@ -26,8 +26,7 @@ SECRET_KEY = 'django-insecure-_@%p!iek8@o3d$4)jv5=l2e2&rgwr2&)re&t#gha5aje=5z=0t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
 
 # REST framework
 
@@ -89,15 +88,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'skill.wsgi.application'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-]
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'http://localhost:8080',
+#     'http://127.0.0.1:8080',
+# ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     'http://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'http://localhost:8080',
+#     'http://127.0.0.1:8080',
+# ]
 
 CORS_ALLOW_CREDENTIALS = True
 
